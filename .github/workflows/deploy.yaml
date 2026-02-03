@@ -40,27 +40,35 @@ jobs:
         run: |
           cd Rin/
           
-          # Get the version being deployed
+          PKG_VERSION=$(cat package.json | grep '"version"' | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]')
+          echo "Package version: $PKG_VERSION"
+          
           if [ "${{ github.event_name }}" == "workflow_dispatch" ] && [ -n "${{ github.event.inputs.version }}" ]; then
             DEPLOY_VERSION="${{ github.event.inputs.version }}"
             # Remove 'v' prefix if present
             DEPLOY_VERSION=${DEPLOY_VERSION#v}
+            echo "Manual deploy version: $DEPLOY_VERSION"
+            
+            if [ "$DEPLOY_VERSION" != "$PKG_VERSION" ]; then
+              echo "❌ Version mismatch: manual deploy specified $DEPLOY_VERSION but package.json is $PKG_VERSION"
+              exit 1
+            fi
+            echo "✅ Manual version validation passed"
+          
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            DEPLOY_VERSION=${GITHUB_REF#refs/tags/}
+            DEPLOY_VERSION=${DEPLOY_VERSION#v}
+            echo "Tag deploy version: $DEPLOY_VERSION"
+            
+            if [ "$DEPLOY_VERSION" != "$PKG_VERSION" ]; then
+              echo "❌ Version mismatch: tag $DEPLOY_VERSION doesn't match package.json $PKG_VERSION"
+              exit 1
+            fi
+            echo "✅ Tag version validation passed"
+          
           else
-            DEPLOY_VERSION=${GITHUB_REF#refs/tags/v}
+            echo "⚠️  Unknown trigger type, skipping version validation"
           fi
-          
-          # Get version from package.json
-          PKG_VERSION=$(cat package.json | grep '"version"' | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]')
-          
-          echo "Deploy version: $DEPLOY_VERSION"
-          echo "Package version: $PKG_VERSION"
-          
-          if [ "$DEPLOY_VERSION" != "$PKG_VERSION" ]; then
-            echo "❌ Version mismatch: deploying $DEPLOY_VERSION but package.json is $PKG_VERSION"
-            exit 1
-          fi
-          
-          echo "✅ Version validation passed"
 
       - name: Deploy
         env:
