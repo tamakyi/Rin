@@ -1,0 +1,36 @@
+- name: Validate deployment version
+  run: |
+    cd Rin/
+    
+    # 获取 package.json 版本
+    PKG_VERSION=$(cat package.json | grep '"version"' | head -1 | awk -F: '{ print $2 }' | sed 's/[",]//g' | tr -d '[[:space:]]')
+    echo "Package.json version: $PKG_VERSION"
+    
+    # 确定部署版本
+    if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+      # 手动触发
+      if [ -z "${{ github.event.inputs.version }}" ]; then
+        # 如果没有提供版本，使用 package.json 版本
+        echo "⚠️  No version specified in manual trigger, using package.json version: $PKG_VERSION"
+        DEPLOY_VERSION="$PKG_VERSION"
+      else
+        # 使用用户输入的版本
+        DEPLOY_VERSION="${{ github.event.inputs.version }}"
+        DEPLOY_VERSION=${DEPLOY_VERSION#v}
+      fi
+    else
+      # 标签触发
+      DEPLOY_VERSION=${GITHUB_REF#refs/tags/}
+      DEPLOY_VERSION=${DEPLOY_VERSION#v}
+    fi
+    
+    echo "Deploy version: $DEPLOY_VERSION"
+    
+    # 验证版本
+    if [ "$DEPLOY_VERSION" != "$PKG_VERSION" ]; then
+      echo "❌ Version mismatch: deploying $DEPLOY_VERSION but package.json is $PKG_VERSION"
+      echo "Hint: Update package.json version or use the correct tag"
+      exit 1
+    fi
+    
+    echo "✅ Version validation passed"
