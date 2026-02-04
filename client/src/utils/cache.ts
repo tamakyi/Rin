@@ -8,7 +8,6 @@ export type Keys =
     | "draft"
     | "alias"
     | "listed"
-    | "comments_closed"
     | "preview"
     ;
 const keys: Keys[] = [
@@ -19,7 +18,6 @@ const keys: Keys[] = [
     "draft",
     "alias",
     "listed",
-    "comments_closed",
     "preview",
 ];
 

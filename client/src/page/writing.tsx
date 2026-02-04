@@ -24,7 +24,6 @@ async function publish({
   summary,
   tags,
   draft,
-  comments_closed,
   createdAt,
   onCompleted,
   showAlert
@@ -35,7 +34,6 @@ async function publish({
   summary: string;
   tags: string[];
   draft: boolean;
-  comments_closed?: boolean;
   alias?: string;
   createdAt?: Date;
   onCompleted?: () => void;
@@ -51,7 +49,6 @@ async function publish({
       tags,
       listed,
       draft,
-      comments_closed,
       createdAt,
     },
     {
@@ -81,7 +78,6 @@ async function update({
   tags,
   listed,
   draft,
-  comments_closed,
   createdAt,
   onCompleted,
   showAlert
@@ -94,7 +90,6 @@ async function update({
   summary?: string;
   tags?: string[];
   draft?: boolean;
-  comments_closed?: boolean;
   createdAt?: Date;
   onCompleted?: () => void;
   showAlert: ShowAlertType;
@@ -109,7 +104,6 @@ async function update({
       tags,
       listed,
       draft,
-      comments_closed,
       createdAt,
     },
     {
@@ -139,7 +133,6 @@ export function WritingPage({ id }: { id?: number }) {
   const [alias, setAlias] = cache.useCache("alias", "");
   const [draft, setDraft] = useState(false);
   const [listed, setListed] = useState(true);
-  const [comments_closed, setCommentsClosed] = useState(false);
   const [content, setContent] = cache.useCache("content", "");
   const [createdAt, setCreatedAt] = useState<Date | undefined>(new Date());
   const [publishing, setPublishing] = useState(false)
@@ -162,7 +155,6 @@ export function WritingPage({ id }: { id?: number }) {
         tags: tagsplit,
         draft,
         listed,
-        comments_closed,
         createdAt,
         onCompleted: () => {
           setPublishing(false)
@@ -187,7 +179,6 @@ export function WritingPage({ id }: { id?: number }) {
         draft,
         alias,
         listed,
-        comments_closed,
         createdAt,
         onCompleted: () => {
           setPublishing(false)
@@ -214,7 +205,6 @@ export function WritingPage({ id }: { id?: number }) {
             if (summary == "") setSummary(data.summary);
             setListed(data.listed === 1);
             setDraft(data.draft === 1);
-            setCommentsClosed(data.comments_closed);
             setCreatedAt(new Date(data.createdAt));
           }
         });
@@ -245,7 +235,6 @@ export function WritingPage({ id }: { id?: number }) {
   useEffect(() => {
     debouncedUpdate();
   }, [content, debouncedUpdate]);
-
   function MetaInput({ className }: { className?: string }) {
     return (
       <>
@@ -299,18 +288,6 @@ export function WritingPage({ id }: { id?: number }) {
               value={listed}
               setValue={setListed}
               placeholder={t('listed')}
-            />
-          </div>
-          <div
-            className="select-none flex flex-row justify-between items-center mt-6 mb-2 px-4"
-            onClick={() => setCommentsClosed(!comments_closed)}  // 新增：关闭评论区开关
-          >
-            <p>{t('comments.closed')}</p>
-            <Checkbox
-              id="comments_closed"
-              value={comments_closed}
-              setValue={setCommentsClosed}
-              placeholder={t('comments.closed')}
             />
           </div>
           <div className="select-none flex flex-row justify-between items-center mt-4 mb-2 pl-4">
