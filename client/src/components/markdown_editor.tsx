@@ -450,61 +450,69 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
 
   // 增强的工具栏组件
   function EnhancedToolbar() {
+    // 定义按钮类型
+    type ToolbarButton = 
+      | { id: string; icon: string; title: string; action: string; type: 'action' }
+      | { id: string; component: React.ReactElement; type: 'component' };
+    
     // 创建按钮组，方便组织
-    const buttonGroups = [
+    const buttonGroups: Array<{
+      name: string;
+      buttons: ToolbarButton[];
+    }> = [
       {
         name: 'text-format',
         buttons: [
-          { id: 'bold', icon: 'ri-bold', title: t('bold') || '加粗', action: 'bold' },
-          { id: 'italic', icon: 'ri-italic', title: t('italic') || '斜体', action: 'italic' },
-          { id: 'strikethrough', icon: 'ri-strikethrough', title: t('strikethrough') || '删除线', action: 'strikethrough' },
-          { id: 'clear-format', icon: 'ri-format-clear', title: t('clear.format') || '清除格式', action: 'clear-format' },
+          { id: 'bold', icon: 'ri-bold', title: t('bold') || '加粗', action: 'bold', type: 'action' },
+          { id: 'italic', icon: 'ri-italic', title: t('italic') || '斜体', action: 'italic', type: 'action' },
+          { id: 'strikethrough', icon: 'ri-strikethrough', title: t('strikethrough') || '删除线', action: 'strikethrough', type: 'action' },
+          { id: 'clear-format', icon: 'ri-format-clear', title: t('clear.format') || '清除格式', action: 'clear-format', type: 'action' },
         ]
       },
       {
         name: 'headings',
         buttons: [
-          { id: 'heading-1', icon: 'ri-h-1', title: t('heading.1') || '标题1', action: 'heading-1' },
-          { id: 'heading-2', icon: 'ri-h-2', title: t('heading.2') || '标题2', action: 'heading-2' },
-          { id: 'heading-3', icon: 'ri-h-3', title: t('heading.3') || '标题3', action: 'heading-3' },
-          { id: 'heading-4', icon: 'ri-h-4', title: t('heading.4') || '标题4', action: 'heading-4' },
+          { id: 'heading-1', icon: 'ri-h-1', title: t('heading.1') || '标题1', action: 'heading-1', type: 'action' },
+          { id: 'heading-2', icon: 'ri-h-2', title: t('heading.2') || '标题2', action: 'heading-2', type: 'action' },
+          { id: 'heading-3', icon: 'ri-h-3', title: t('heading.3') || '标题3', action: 'heading-3', type: 'action' },
+          { id: 'heading-4', icon: 'ri-h-4', title: t('heading.4') || '标题4', action: 'heading-4', type: 'action' },
         ]
       },
       {
         name: 'lists',
         buttons: [
-          { id: 'unordered-list', icon: 'ri-list-unordered', title: t('unordered.list') || '无序列表', action: 'unordered-list' },
-          { id: 'ordered-list', icon: 'ri-list-ordered', title: t('ordered.list') || '有序列表', action: 'ordered-list' },
-          { id: 'task-list', icon: 'ri-task-line', title: t('task.list') || '任务列表', action: 'task-list' },
+          { id: 'unordered-list', icon: 'ri-list-unordered', title: t('unordered.list') || '无序列表', action: 'unordered-list', type: 'action' },
+          { id: 'ordered-list', icon: 'ri-list-ordered', title: t('ordered.list') || '有序列表', action: 'ordered-list', type: 'action' },
+          { id: 'task-list', icon: 'ri-task-line', title: t('task.list') || '任务列表', action: 'task-list', type: 'action' },
         ]
       },
       {
         name: 'code',
         buttons: [
-          { id: 'inline-code', icon: 'ri-code-line', title: t('inline.code') || '行内代码', action: 'inline-code' },
-          { id: 'code-block', icon: 'ri-code-box-line', title: t('code.block') || '代码块', action: 'code-block' },
+          { id: 'inline-code', icon: 'ri-code-line', title: t('inline.code') || '行内代码', action: 'inline-code', type: 'action' },
+          { id: 'code-block', icon: 'ri-code-box-line', title: t('code.block') || '代码块', action: 'code-block', type: 'action' },
         ]
       },
       {
         name: 'blocks',
         buttons: [
-          { id: 'blockquote', icon: 'ri-double-quotes-l', title: t('blockquote') || '引用', action: 'blockquote' },
-          { id: 'horizontal-rule', icon: 'ri-separator', title: t('horizontal.rule') || '分割线', action: 'horizontal-rule' },
-          { id: 'table', icon: 'ri-table-line', title: t('table') || '表格', action: 'table' },
+          { id: 'blockquote', icon: 'ri-double-quotes-l', title: t('blockquote') || '引用', action: 'blockquote', type: 'action' },
+          { id: 'horizontal-rule', icon: 'ri-separator', title: t('horizontal.rule') || '分割线', action: 'horizontal-rule', type: 'action' },
+          { id: 'table', icon: 'ri-table-line', title: t('table') || '表格', action: 'table', type: 'action' },
         ]
       },
       {
         name: 'formatting',
         buttons: [
-          { id: 'link', icon: 'ri-link', title: t('link') || '链接', action: 'link' },
-          { id: 'increase-indent', icon: 'ri-indent-increase', title: t('increase.indent') || '增加缩进', action: 'increase-indent' },
-          { id: 'decrease-indent', icon: 'ri-indent-decrease', title: t('decrease.indent') || '减少缩进', action: 'decrease-indent' },
+          { id: 'link', icon: 'ri-link', title: t('link') || '链接', action: 'link', type: 'action' },
+          { id: 'increase-indent', icon: 'ri-indent-increase', title: t('increase.indent') || '增加缩进', action: 'increase-indent', type: 'action' },
+          { id: 'decrease-indent', icon: 'ri-indent-decrease', title: t('decrease.indent') || '减少缩进', action: 'decrease-indent', type: 'action' },
         ]
       },
       {
         name: 'media',
         buttons: [
-          { id: 'upload-image', component: <UploadImageButton key="upload-image" /> },
+          { id: 'upload-image', component: <UploadImageButton key="upload-image" />, type: 'component' },
         ]
       }
     ];
@@ -514,7 +522,7 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
         {buttonGroups.map((group, groupIndex) => (
           <React.Fragment key={group.name}>
             {group.buttons.map((button) => (
-              button.component ? (
+              button.type === 'component' ? (
                 <span key={button.id} className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors">
                   {button.component}
                 </span>
