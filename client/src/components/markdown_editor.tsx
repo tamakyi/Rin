@@ -1,5 +1,5 @@
 import Editor from '@monaco-editor/react';
-import { editor, KeyMod, KeyCode } from 'monaco-editor'; // 修改这里：导入 KeyMod 和 KeyCode
+import { editor, KeyMod, KeyCode, Range, Position } from 'monaco-editor'; // 添加 Range 和 Position 导入
 import React, { useRef, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Loading from 'react-loading';
@@ -254,7 +254,7 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
           // 如果有选中文本，用其作为链接文本
           newText = `[${selectedText}](url)`;
           // 选中URL部分方便修改
-          newSelection = new editor.Range(  // 使用 editor.Range 而不是 monaco.Range
+          newSelection = new Range(  // 使用直接导入的 Range 类
             selection.startLineNumber,
             selection.startColumn + selectedText.length + 3,
             selection.endLineNumber,
@@ -264,7 +264,7 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
           // 如果没有选中文本，插入完整的链接模板
           newText = `[链接文本](url)`;
           // 选中"链接文本"部分
-          newSelection = new editor.Range(  // 使用 editor.Range 而不是 monaco.Range
+          newSelection = new Range(  // 使用直接导入的 Range 类
             selection.startLineNumber,
             selection.startColumn + 1,
             selection.startLineNumber,
@@ -347,7 +347,7 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
         
         // 如果没有选中文本，将光标放在"language"处
         if (!selectedText) {
-          const newSelection = new editor.Range(  // 使用 editor.Range 而不是 monaco.Range
+          const newSelection = new Range(  // 使用直接导入的 Range 类
             selection.startLineNumber + 1,
             1,
             selection.startLineNumber + 1,
@@ -502,7 +502,7 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
           
           // 如果是整行替换
           if (!selectedText) {
-            const lineRange = new editor.Range(  // 使用 editor.Range 而不是 monaco.Range
+            const lineRange = new Range(  // 使用直接导入的 Range 类
               selection.startLineNumber,
               1,
               selection.startLineNumber,
@@ -549,7 +549,7 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
         }]);
         
         // 将光标放在分割线之后
-        const newPosition = new editor.Position(  // 使用 editor.Position 而不是 monaco.Position
+        const newPosition = new Position(  // 使用直接导入的 Position 类
           selection.startLineNumber + 2,
           1
         );
