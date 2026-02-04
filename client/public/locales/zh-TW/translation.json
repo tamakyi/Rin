@@ -76,6 +76,10 @@
   "description": "描述",
   "draft": "草稿",
   "draft_bin": "草稿箱",
+  "comments": {
+    "closed": "留言已關閉",
+    "closed.description": "關閉後用戶無法發表留言"
+  },
   "edit": "編輯",
   "error": {
     "api_url": "Pages 環境變數中 API_URL 應為 Worker 地址，請檢查 Pages 環境變數中 API_URL 是否正確",

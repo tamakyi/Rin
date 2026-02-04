@@ -18,6 +18,15 @@ export function CommentService() {
             group
                 .get('/:feed', async ({ params: { feed } }) => {
                     const feedId = parseInt(feed);
+                    const feedRecord = await db.query.feeds.findFirst({
+                        where: eq(feeds.id, feedId),
+                        columns: { comments_closed: true }
+                    });
+                    
+                    if (!feedRecord || feedRecord.comments_closed === 1) {
+                        return [];
+                    }
+                    
                     const comment_list = await db.query.comments.findMany({
                         where: eq(comments.feedId, feedId),
                         columns: { feedId: false, userId: false },
@@ -41,15 +50,24 @@ export function CommentService() {
                     }
                     const feedId = parseInt(feed);
                     const userId = parseInt(uid);
+                    
+                    const feedRecord = await db.query.feeds.findFirst({ 
+                        where: eq(feeds.id, feedId) 
+                    });
+                    if (!feedRecord) {
+                        set.status = 404;
+                        return 'Article not found';
+                    }
+                    
+                    if (feedRecord.comments_closed === 1) {
+                        set.status = 403;
+                        return 'Comments are closed for this article';
+                    }
+                    
                     const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
                     if (!user) {
                         set.status = 400;
                         return 'User not found';
-                    }
-                    const exist = await db.query.feeds.findFirst({ where: eq(feeds.id, feedId) });
-                    if (!exist) {
-                        set.status = 400;
-                        return 'Feed not found';
                     }
 
                     await db.insert(comments).values({
@@ -60,7 +78,7 @@ export function CommentService() {
 
                     const webhookUrl = await ServerConfig().get(Config.webhookUrl) || env.WEBHOOK_URL;
                     // notify
-                    await notify(webhookUrl, `${env.FRONTEND_URL}/feed/${feedId}\n${user.username} 评论了: ${exist.title}\n${content}`);
+                    await notify(webhookUrl, `${env.FRONTEND_URL}/feed/${feedId}\n${user.username} 评论了: ${feedRecord.title}\n${content}`);
                     return 'OK';
                 }, {
                     body: t.Object({

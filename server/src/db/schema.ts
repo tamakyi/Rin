@@ -13,6 +13,7 @@ export const feeds = sqliteTable("feeds", {
     content: text("content").notNull(),
     listed: integer("listed").default(1).notNull(),
     draft: integer("draft").default(1).notNull(),
+    comments_closed: integer("comments_closed").default(0).notNull(),
     top: integer("top").default(0).notNull(),
     uid: integer("uid").references(() => users.id).notNull(),
     createdAt: created_at,

@@ -76,6 +76,10 @@
   "description": "Description",
   "draft": "Draft",
   "draft_bin": "Draft Bin",
+  "comments": {
+    "closed": "Comment is Close",
+    "closed.description": "User cannot comment in ths feed"
+  },
   "edit": "Edit",
   "error": {
     "api_url": "API_URL in Pages environment variables should be the Worker address. Please check if API_URL in Pages environment variables is correct.",

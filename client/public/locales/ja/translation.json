@@ -76,6 +76,10 @@
   "description": "説明",
   "draft": "下書き",
   "draft_bin": "下書き",
+  "comments": {
+    "closed": "コメントは閉鎖されました",
+    "closed.description": "閉鎖後、ユーザーはコメントを投稿できません"
+  },
   "edit": "編集",
   "error": {
     "api_url": "Pages 環境変数のAPI_URLはWorkerアドレスである必要があります。Pages環境変数のAPI_URLが正しいか確認してください。",

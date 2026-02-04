@@ -4,10 +4,10 @@ import {timeago} from "../utils/timeago";
 import {HashTag} from "./hashtag";
 import {useMemo} from "react";
 
-export function FeedCard({ id, title, avatar, draft, listed, top, summary, hashtags, createdAt, updatedAt }:
+export function FeedCard({ id, title, avatar, draft, listed, comments_closed, top, summary, hashtags, createdAt, updatedAt }:
     {
         id: string, avatar?: string,
-        draft?: number, listed?: number, top?: number,
+        draft?: number, listed?: number, comments_closed?: number, top?: number,
         title: string, summary: string,
         hashtags: { id: number, name: string }[],
         createdAt: Date, updatedAt: Date
@@ -37,6 +37,7 @@ export function FeedCard({ id, title, avatar, draft, listed, top, summary, hasht
                 <p className="space-x-2">
                     {draft === 1 && <span className="text-gray-400 text-sm">{t("draft")}</span>}
                     {listed === 0 && <span className="text-gray-400 text-sm">{t("unlisted")}</span>}
+                    {comments_closed === 1 && <span className="text-gray-400 text-sm">{t("comments.closed")}</span>}
                     {top === 1 && <span className="text-theme text-sm">
                         {t('article.top.title')}
                     </span>}
@@ -54,5 +55,5 @@ export function FeedCard({ id, title, avatar, draft, listed, top, summary, hasht
 
             </Link>
         </>
-    ), [id, title, avatar, draft, listed, top, summary, hashtags, createdAt, updatedAt])
+    ), [id, title, avatar, draft, listed, comments_closed, top, summary, hashtags, createdAt, updatedAt])
 }
