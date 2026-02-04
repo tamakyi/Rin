@@ -214,7 +214,7 @@ export function WritingPage({ id }: { id?: number }) {
             if (summary == "") setSummary(data.summary);
             setListed(data.listed === 1);
             setDraft(data.draft === 1);
-            setCommentsClosed(data.comments_closed === 1);
+            setCommentsClosed(data.comments_closed);
             setCreatedAt(new Date(data.createdAt));
           }
         });

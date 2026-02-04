@@ -102,7 +102,7 @@ export function FeedService() {
                         orderBy: [desc(feeds.createdAt), desc(feeds.updatedAt)],
                     }))
                 })
-                .post('/', async ({ admin, set, uid, body: { title, alias, listed, content, summary, draft, comments_closed, closed, tags, createdAt } }) => {
+                .post('/', async ({ admin, set, uid, body: { title, alias, listed, content, summary, draft, comments_closed, tags, createdAt } }) => {
                     if (!admin) {
                         set.status = 403;
                         return 'Permission denied';
@@ -360,7 +360,7 @@ export function FeedService() {
                     set,
                     uid,
                     params: { id },
-                    body: { title, listed, content, summary, alias, draft, comments_closed, closed, top, tags, createdAt }
+                    body: { title, listed, content, summary, alias, draft, comments_closed, top, tags, createdAt }
                 }) => {
                     const id_num = parseInt(id);
                     const feed = await db.query.feeds.findFirst({
