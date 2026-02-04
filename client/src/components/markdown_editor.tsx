@@ -1,5 +1,5 @@
 import Editor from '@monaco-editor/react';
-import { editor } from 'monaco-editor';
+import { editor, KeyMod, KeyCode } from 'monaco-editor'; // 修改这里：导入 KeyMod 和 KeyCode
 import React, { useRef, useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import Loading from 'react-loading';
@@ -146,52 +146,53 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
 
   /* ---------------- Monaco Mount & IME Optimization ---------------- */
 
-  const handleEditorMount = (editor: editor.IStandaloneCodeEditor) => {
-    editorRef.current = editor;
+  const handleEditorMount = (editorInstance: editor.IStandaloneCodeEditor) => {
+    editorRef.current = editorInstance;
 
-    editor.onDidCompositionStart(() => {
+    editorInstance.onDidCompositionStart(() => {
       isComposingRef.current = true;
     });
 
-    editor.onDidCompositionEnd(() => {
+    editorInstance.onDidCompositionEnd(() => {
       isComposingRef.current = false;
-      setContent(editor.getValue());
+      setContent(editorInstance.getValue());
     });
 
-    editor.onDidChangeModelContent(() => {
+    editorInstance.onDidChangeModelContent(() => {
       if (!isComposingRef.current) {
-        setContent(editor.getValue());
+        setContent(editorInstance.getValue());
       }
     });
 
-    editor.onDidBlurEditorText(() => {
-      setContent(editor.getValue());
+    editorInstance.onDidBlurEditorText(() => {
+      setContent(editorInstance.getValue());
     });
 
-    editor.addAction({
+    // 使用导入的 KeyMod 和 KeyCode，而不是 monaco.KeyMod 和 monaco.KeyCode
+    editorInstance.addAction({
       id: 'markdown-bold',
       label: 'Toggle Bold',
       keybindings: [
-        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyB
+        KeyMod.CtrlCmd | KeyCode.KeyB
       ],
       contextMenuGroupId: 'markdown',
       contextMenuOrder: 1,
       run: () => {
-        const selection = editor.getSelection();
+        const selection = editorInstance.getSelection();
         if (!selection) return;
-        const model = editor.getModel();
+        const model = editorInstance.getModel();
         if (!model) return;
         
         const selectedText = model.getValueInRange(selection);
         // 如果已经加粗，则移除；否则添加加粗标记
         if (selectedText.startsWith('**') && selectedText.endsWith('**')) {
           const newText = selectedText.slice(2, -2);
-          editor.executeEdits('bold', [{
+          editorInstance.executeEdits('bold', [{
             range: selection,
             text: newText,
           }]);
         } else {
-          editor.executeEdits('bold', [{
+          editorInstance.executeEdits('bold', [{
             range: selection,
             text: `**${selectedText}**`,
           }]);
@@ -200,29 +201,29 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
     });  
 
     // 2. 斜体文本: Ctrl/Cmd + I
-    editor.addAction({
+    editorInstance.addAction({
       id: 'markdown-italic',
       label: 'Toggle Italic',
       keybindings: [
-        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyI
+        KeyMod.CtrlCmd | KeyCode.KeyI
       ],
       contextMenuGroupId: 'markdown',
       contextMenuOrder: 2,
       run: () => {
-        const selection = editor.getSelection();
+        const selection = editorInstance.getSelection();
         if (!selection) return;
-        const model = editor.getModel();
+        const model = editorInstance.getModel();
         if (!model) return;
         
         const selectedText = model.getValueInRange(selection);
         if (selectedText.startsWith('*') && selectedText.endsWith('*') && selectedText.length > 1) {
           const newText = selectedText.slice(1, -1);
-          editor.executeEdits('italic', [{
+          editorInstance.executeEdits('italic', [{
             range: selection,
             text: newText,
           }]);
         } else {
-          editor.executeEdits('italic', [{
+          editorInstance.executeEdits('italic', [{
             range: selection,
             text: `*${selectedText}*`,
           }]);
@@ -231,18 +232,18 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
     });  
 
     // 3. 插入链接: Ctrl/Cmd + K
-    editor.addAction({
+    editorInstance.addAction({
       id: 'markdown-link',
       label: 'Insert Link',
       keybindings: [
-        monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyK
+        KeyMod.CtrlCmd | KeyCode.KeyK
       ],
       contextMenuGroupId: 'markdown',
       contextMenuOrder: 3,
       run: () => {
-        const selection = editor.getSelection();
+        const selection = editorInstance.getSelection();
         if (!selection) return;
-        const model = editor.getModel();
+        const model = editorInstance.getModel();
         if (!model) return;
         
         const selectedText = model.getValueInRange(selection);
@@ -253,7 +254,7 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
           // 如果有选中文本，用其作为链接文本
           newText = `[${selectedText}](url)`;
           // 选中URL部分方便修改
-          newSelection = new monaco.Range(
+          newSelection = new editor.Range(  // 使用 editor.Range 而不是 monaco.Range
             selection.startLineNumber,
             selection.startColumn + selectedText.length + 3,
             selection.endLineNumber,
@@ -263,7 +264,7 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
           // 如果没有选中文本，插入完整的链接模板
           newText = `[链接文本](url)`;
           // 选中"链接文本"部分
-          newSelection = new monaco.Range(
+          newSelection = new editor.Range(  // 使用 editor.Range 而不是 monaco.Range
             selection.startLineNumber,
             selection.startColumn + 1,
             selection.startLineNumber,
@@ -271,43 +272,43 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
           );
         }
         
-        editor.executeEdits('link', [{
+        editorInstance.executeEdits('link', [{
           range: selection,
           text: newText,
         }]);
         
         // 设置新的选择区域，方便用户直接修改
         if (newSelection) {
-          editor.setSelection(newSelection);
-          editor.focus();
+          editorInstance.setSelection(newSelection);
+          editorInstance.focus();
         }
       }
     });  
 
     // 4. 插入代码: Ctrl/Cmd + `
-    editor.addAction({
+    editorInstance.addAction({
       id: 'markdown-inline-code',
       label: 'Insert Inline Code',
       keybindings: [
-        monaco.KeyMod.CtrlCmd | monaco.KeyCode.Backquote
+        KeyMod.CtrlCmd | KeyCode.Backquote
       ],
       contextMenuGroupId: 'markdown',
       contextMenuOrder: 4,
       run: () => {
-        const selection = editor.getSelection();
+        const selection = editorInstance.getSelection();
         if (!selection) return;
-        const model = editor.getModel();
+        const model = editorInstance.getModel();
         if (!model) return;
         
         const selectedText = model.getValueInRange(selection);
         if (selectedText.startsWith('`') && selectedText.endsWith('`') && selectedText.length > 1) {
           const newText = selectedText.slice(1, -1);
-          editor.executeEdits('inline-code', [{
+          editorInstance.executeEdits('inline-code', [{
             range: selection,
             text: newText,
           }]);
         } else {
-          editor.executeEdits('inline-code', [{
+          editorInstance.executeEdits('inline-code', [{
             range: selection,
             text: `\`${selectedText}\``,
           }]);
@@ -316,19 +317,19 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
     });  
 
     // 5. 插入代码块: Ctrl/Cmd + Shift + `
-    editor.addAction({
+    editorInstance.addAction({
       id: 'markdown-code-block',
       label: 'Insert Code Block',
       keybindings: [
-        monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Backquote
+        KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.Backquote
       ],
       contextMenuGroupId: 'markdown',
       contextMenuOrder: 5,
       run: () => {
-        const selection = editor.getSelection();
+        const selection = editorInstance.getSelection();
         if (!selection) return;
         
-        const selectedText = editor.getModel()?.getValueInRange(selection) || '';
+        const selectedText = editorInstance.getModel()?.getValueInRange(selection) || '';
         let newText;
         
         if (selectedText) {
@@ -339,38 +340,38 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
           newText = `\`\`\`\nlanguage\n\`\`\``;
         }
         
-        editor.executeEdits('code-block', [{
+        editorInstance.executeEdits('code-block', [{
           range: selection,
           text: newText,
         }]);
         
         // 如果没有选中文本，将光标放在"language"处
         if (!selectedText) {
-          const newSelection = new monaco.Range(
+          const newSelection = new editor.Range(  // 使用 editor.Range 而不是 monaco.Range
             selection.startLineNumber + 1,
             1,
             selection.startLineNumber + 1,
             9
           );
-          editor.setSelection(newSelection);
-          editor.focus();
+          editorInstance.setSelection(newSelection);
+          editorInstance.focus();
         }
       }
     });  
 
     // 6. 插入引用块: Ctrl/Cmd + Shift + Q
-    editor.addAction({
+    editorInstance.addAction({
       id: 'markdown-blockquote',
       label: 'Insert Blockquote',
       keybindings: [
-        monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyQ
+        KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyQ
       ],
       contextMenuGroupId: 'markdown',
       contextMenuOrder: 6,
       run: () => {
-        const selection = editor.getSelection();
+        const selection = editorInstance.getSelection();
         if (!selection) return;
-        const model = editor.getModel();
+        const model = editorInstance.getModel();
         if (!model) return;
         
         const selectedText = model.getValueInRange(selection);
@@ -385,7 +386,7 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
           newText = `> `;
         }
         
-        editor.executeEdits('blockquote', [{
+        editorInstance.executeEdits('blockquote', [{
           range: selection,
           text: newText,
         }]);
@@ -393,18 +394,18 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
     });  
 
     // 7. 插入无序列表: Ctrl/Cmd + Shift + L
-    editor.addAction({
+    editorInstance.addAction({
       id: 'markdown-unordered-list',
       label: 'Insert Unordered List',
       keybindings: [
-        monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyL
+        KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyL
       ],
       contextMenuGroupId: 'markdown',
       contextMenuOrder: 7,
       run: () => {
-        const selection = editor.getSelection();
+        const selection = editorInstance.getSelection();
         if (!selection) return;
-        const model = editor.getModel();
+        const model = editorInstance.getModel();
         if (!model) return;
         
         const selectedText = model.getValueInRange(selection);
@@ -419,7 +420,7 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
           newText = `- `;
         }
         
-        editor.executeEdits('unordered-list', [{
+        editorInstance.executeEdits('unordered-list', [{
           range: selection,
           text: newText,
         }]);
@@ -427,18 +428,18 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
     });  
 
     // 8. 插入有序列表: Ctrl/Cmd + Shift + O
-    editor.addAction({
+    editorInstance.addAction({
       id: 'markdown-ordered-list',
       label: 'Insert Ordered List',
       keybindings: [
-        monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyO
+        KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyO
       ],
       contextMenuGroupId: 'markdown',
       contextMenuOrder: 8,
       run: () => {
-        const selection = editor.getSelection();
+        const selection = editorInstance.getSelection();
         if (!selection) return;
-        const model = editor.getModel();
+        const model = editorInstance.getModel();
         if (!model) return;
         
         const selectedText = model.getValueInRange(selection);
@@ -453,7 +454,7 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
           newText = `1. `;
         }
         
-        editor.executeEdits('ordered-list', [{
+        editorInstance.executeEdits('ordered-list', [{
           range: selection,
           text: newText,
         }]);
@@ -462,18 +463,18 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
 
     // 9. 插入标题 (多个级别): Ctrl/Cmd + 1/2/3/4/5/6
     const addHeadingAction = (level: number) => {
-      editor.addAction({
+      editorInstance.addAction({
         id: `markdown-heading-${level}`,
         label: `Insert Heading ${level}`,
         keybindings: [
-          monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | (48 + level) as number // 48是KeyCode.Digit0
+          KeyMod.CtrlCmd | KeyMod.Alt | (KeyCode.Digit0 + level) // 使用 KeyCode.Digit0 作为基准
         ],
         contextMenuGroupId: 'markdown',
         contextMenuOrder: 9 + level,
         run: () => {
-          const selection = editor.getSelection();
+          const selection = editorInstance.getSelection();
           if (!selection) return;
-          const model = editor.getModel();
+          const model = editorInstance.getModel();
           if (!model) return;
           
           const selectedText = model.getValueInRange(selection);
@@ -501,18 +502,18 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
           
           // 如果是整行替换
           if (!selectedText) {
-            const lineRange = new monaco.Range(
+            const lineRange = new editor.Range(  // 使用 editor.Range 而不是 monaco.Range
               selection.startLineNumber,
               1,
               selection.startLineNumber,
               model.getLineLength(selection.startLineNumber) + 1
             );
-            editor.executeEdits(`heading-${level}`, [{
+            editorInstance.executeEdits(`heading-${level}`, [{
               range: lineRange,
               text: newText,
             }]);
           } else {
-            editor.executeEdits(`heading-${level}`, [{
+            editorInstance.executeEdits(`heading-${level}`, [{
               range: selection,
               text: newText,
             }]);
@@ -527,33 +528,33 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
     }  
 
     // 10. 插入水平分割线: Ctrl/Cmd + Shift + H
-    editor.addAction({
+    editorInstance.addAction({
       id: 'markdown-horizontal-rule',
       label: 'Insert Horizontal Rule',
       keybindings: [
-        monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyH
+        KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyH
       ],
       contextMenuGroupId: 'markdown',
       contextMenuOrder: 16,
       run: () => {
-        const selection = editor.getSelection();
+        const selection = editorInstance.getSelection();
         if (!selection) return;
         
         // 插入分割线，前后留空行是Markdown最佳实践
         const newText = `\n---\n`;
         
-        editor.executeEdits('horizontal-rule', [{
+        editorInstance.executeEdits('horizontal-rule', [{
           range: selection,
           text: newText,
         }]);
         
         // 将光标放在分割线之后
-        const newPosition = new monaco.Position(
+        const newPosition = new editor.Position(  // 使用 editor.Position 而不是 monaco.Position
           selection.startLineNumber + 2,
           1
         );
-        editor.setPosition(newPosition);
-        editor.focus();
+        editorInstance.setPosition(newPosition);
+        editorInstance.focus();
       }
     });
   };
@@ -593,7 +594,7 @@ export function MarkdownEditor({ content, setContent, placeholder = "> Write you
       </div>
       <div className={`grid grid-cols-1 ${preview === 'comparison' ? "sm:grid-cols-2" : ""}`}>
         <div className={"flex flex-col " + (preview === 'preview' ? "hidden" : "")}>
-          <div className="flex flex-row justify-start mb-2">
+          <div className="flex flex-row justify-start mb-2 space-x-1">
             <ToolbarButtons />
           </div>
           <div
